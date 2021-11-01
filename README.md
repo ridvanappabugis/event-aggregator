@@ -64,8 +64,6 @@ Response:
 #### [POST] `/telemetry`
 Endpoint for posting of a list of vehicle telemetries to the aggregation service. Used to simulate a stream of kafka events.
 
-Additional input data examples can be found under `src/main/resources/examples` folder.
-
 ##### Usage
 Request: [POST] `/telemetry`
 ```
