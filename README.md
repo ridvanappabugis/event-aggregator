@@ -13,6 +13,9 @@ If the aggregator pool is empty, the engine will block until an aggregator resou
 
 
 ## Testing
+<b>Run with `mvn clean install && mvn exec:java`.</b>
+
+
 Application is configured to run on port 8086.
 Any configuration properties can be changed via the `application.properties` file.
 
