@@ -8,21 +8,24 @@ import com.ridvan.eventaggregator.services.TelemetryValidationService;
 import java.util.UUID;
 
 /**
- * Routes telemetry messages to the respective event handlers
+ * Routes telemetry messages to the respective event handlers.
  */
-public class KafkaTelemetryRouter implements EventRouter {
+public class TelemetryRouter implements EventRouter {
     private final TelemetryAggregationEngine aggregationHandler;
     private final TelemetryService persistenceHandler;
     private final TelemetryValidationService validationHandler;
 
-    public KafkaTelemetryRouter(final TelemetryAggregationEngine aggregationHandler,
-                                final TelemetryService persistenceHandler,
-                                final TelemetryValidationService validationHandler) {
+    public TelemetryRouter(final TelemetryAggregationEngine aggregationHandler,
+                           final TelemetryService persistenceHandler,
+                           final TelemetryValidationService validationHandler) {
         this.aggregationHandler = aggregationHandler;
         this.persistenceHandler = persistenceHandler;
         this.validationHandler = validationHandler;
     }
 
+    /**
+     * Event handlers for a telemetry event - validation, aggregation, persisting.
+     */
     @Override
     public void route(final UUID routingKey, final Object event) {
         final VehicleTelemetry telemetry = (VehicleTelemetry) event;

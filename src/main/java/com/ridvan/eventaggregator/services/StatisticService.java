@@ -36,6 +36,7 @@ public class StatisticService {
     public VehicleStatistic merge(final VehicleStatistic oldStatistic, final VehicleStatistic newStatistic) {
         final VehicleStatistic mergedStatistic = new VehicleStatistic(oldStatistic.getId());
 
+        // This assumes telemetry will arrive in order.
         mergedStatistic.setLastMessageTimestamp(newStatistic.getLastMessageTimestamp());
         mergedStatistic.setNumberOfCharges(oldStatistic.getNumberOfCharges() + newStatistic.getNumberOfCharges());
         mergedStatistic.setMaximumSpeed(max(oldStatistic.getMaximumSpeed(), newStatistic.getMaximumSpeed()));

@@ -14,6 +14,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Engine worker. Task of this class is to aggregate incoming telemetry events.
+ * Uses a pool of aggregators for aggregation, periodically releasing the locked aggregators
+ *          - thus completing their aggregation for the accumulated batch.
+ * In case no aggregators are available, it will block event submission until the aggregators are freed.
+ */
 public class TelemetryAggregationEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(TelemetryAggregationEngine.class);
 
@@ -42,7 +48,7 @@ public class TelemetryAggregationEngine {
     }
 
     public void aggregateTelemetry(final UUID id, final VehicleTelemetry telemetry) {
-        LOGGER.info("TELEMETRY-INFO: telemetryId={}, Dispatched telemetry for aggregation.", id);
+        LOGGER.info("[TELEMETRY-INFO]: telemetryId={}, Dispatched telemetry for aggregation.", id);
 
         if (!ongoingAggregators.containsKey(id)) {
             tryToObtainAggregator(id);
@@ -83,17 +89,17 @@ public class TelemetryAggregationEngine {
     }
 
     /**
-     * Periodically releases accumulated aggregators.
+     * Periodically releases accumulated aggregators, persisting their result.
      */
     @Scheduled(fixedDelayString = "${engine.aggregation.refresh-time}")
     public void releaseAggregator() {
-        LOGGER.info("AGGREGATION-INFO: Aggregation accumulation timeframe passed, releasing aggregators.");
+        LOGGER.info("[AGGREGATION]: Aggregation accumulation timeframe passed, releasing aggregators.");
 
         for (final Map.Entry<UUID, Aggregator<VehicleTelemetry, VehicleStatistic>> aggregatorEntry: this.ongoingAggregators.entrySet()) {
             synchronized (aggregatorEntry.getKey()) {
                 final Aggregator<VehicleTelemetry, VehicleStatistic> aggregator = aggregatorEntry.getValue();
 
-                LOGGER.info("Releasing aggregator for id: " + aggregator.getLockId());
+                LOGGER.info("[AGGREGATION]: Releasing aggregator for id: " + aggregator.getLockId());
 
                 // Persist statistic
                 this.statisticService.persistStatistic(aggregator.aggregate());

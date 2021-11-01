@@ -43,9 +43,9 @@ public class KafkaConfig {
      */
 
     @Bean
-    EmbeddedKafkaBroker broker() {
+    EmbeddedKafkaBroker broker(@Value("${kafka.embedded.port}") final Integer port) {
         return new EmbeddedKafkaBroker(1)
-                .kafkaPorts(9092)
+                .kafkaPorts(port)
                 .brokerListProperty("spring.kafka.bootstrap-servers");
     }
 
@@ -56,6 +56,7 @@ public class KafkaConfig {
 
     /**
      * Sends 2 vehicle ID messages every 1HZ. These messages get picked up by the {@link com.ridvan.eventaggregator.services.KafkaReceiverService}.
+     * Simulates an accelerating vehicle.
      */
     @Bean
     public ApplicationRunner runner(@Value("${spring.kafka.template.default-topic}") final String topic,
@@ -65,22 +66,25 @@ public class KafkaConfig {
             final UUID id = UUID.randomUUID();
             final UUID id2 = UUID.randomUUID();
 
+            long seconds = 1;
             while(true) {
-                final VehicleTelemetry telemetry = new VehicleTelemetry(id, System.currentTimeMillis(), getSignal());
+                final VehicleTelemetry telemetry = new VehicleTelemetry(id, System.currentTimeMillis(), getSignal(seconds));
                 template.send(topic, JSONConverter.toJSON(telemetry));
-                final VehicleTelemetry telemetry2 = new VehicleTelemetry(id2, System.currentTimeMillis(), getSignal());
+                final VehicleTelemetry telemetry2 = new VehicleTelemetry(id2, System.currentTimeMillis(), getSignal(seconds));
                 template.send(topic, JSONConverter.toJSON(telemetry2));
+
+                seconds++;
                 Thread.sleep(interval);
             }
         };
     }
 
-    private Map<VehicleSignal, Double> getSignal() {
+    private Map<VehicleSignal, Double> getSignal(final long num) {
         final Map<VehicleSignal, Double> signals = new HashMap<>();
-        signals.put(VehicleSignal.CURRENT_SPEED, Math.random());
-        signals.put(VehicleSignal.DRIVING_TIME, Math.random());
-        signals.put(VehicleSignal.IS_CHARGING, 1d);
-        signals.put(VehicleSignal.ODOMETER, 10000d);
+        signals.put(VehicleSignal.CURRENT_SPEED, (double) num);
+        signals.put(VehicleSignal.DRIVING_TIME, (double) num);
+        signals.put(VehicleSignal.IS_CHARGING, 0d);
+        signals.put(VehicleSignal.ODOMETER, (double) num);
 
         return signals;
     }
