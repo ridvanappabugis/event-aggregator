@@ -39,10 +39,23 @@ public class StatisticService {
         // This assumes telemetry will arrive in order.
         mergedStatistic.setLastMessageTimestamp(newStatistic.getLastMessageTimestamp());
         mergedStatistic.setNumberOfCharges(oldStatistic.getNumberOfCharges() + newStatistic.getNumberOfCharges());
-        mergedStatistic.setMaximumSpeed(max(oldStatistic.getMaximumSpeed(), newStatistic.getMaximumSpeed()));
+
+        mergedStatistic.setMaximumSpeed(resolveMax(oldStatistic.getMaximumSpeed(), newStatistic.getMaximumSpeed()));
         mergedStatistic.setAverageSpeed(newStatistic.getAverageSpeed());
         mergedStatistic.setCurrentState(newStatistic.getCurrentState());
 
         return mergedStatistic;
+    }
+
+    public double resolveMax(final Double oldMax, final Double newMax) {
+        if (newMax.isNaN()) {
+            return oldMax;
+        }
+
+        if (oldMax.isNaN()) {
+            return newMax;
+        }
+
+        return max(oldMax, newMax);
     }
 }

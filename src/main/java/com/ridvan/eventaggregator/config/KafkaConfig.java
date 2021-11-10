@@ -72,9 +72,9 @@ public class KafkaConfig {
             while(true) {
                 // Driving time
                 final double seconds = TimeUnit.MILLISECONDS.toSeconds(interval) * iteration;
-                // Max speed km/s
-                final double speed = seconds > 200 ? 200 : seconds;
-                // Delta odometer km/s
+                // Max speed m/h 10m/s
+                final double speed = seconds > 10 ? 10 : seconds;
+                // Delta odometer m/h
                 odometer = odometer + TimeUnit.MILLISECONDS.toSeconds(interval) * speed;
 
                 final VehicleTelemetry telemetry = new VehicleTelemetry(id, System.currentTimeMillis(), getSignal(speed, seconds, odometer));
