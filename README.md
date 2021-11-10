@@ -6,6 +6,10 @@ This application is written as an engine-based aggregation service. There are 2 
 During routing, validation is performed, in the context of a single telemetry, based on some assumed busines constraints (see TelemetryValidationService.class).
 Each telemetry event is validated, aggregated and finally persistend to the event storage (for event storage purposes).
 
+<i>Simple Architecture Diagram:</i>
+
+![Simple Architecture Diagram](resources/eventAgg.drawio.png)
+
 #### Aggregation engine
 An aggregation event orchestrator over a defined Aggregator pool.  Capable of managing event routing of specific vehicle telemetries to their respective Aggregators, periodically releasing the Aggregators, causing them to aggregate over the accumulated batch.
 Each aggregator is an instance of the Aggregator class capable of collecting a batch of id specific telemetries, aggregating them on release.
@@ -59,8 +63,6 @@ Response:
 
 #### [POST] `/telemetry`
 Endpoint for posting of a list of vehicle telemetries to the aggregation service. Used to simulate a stream of kafka events.
-
-Additional input data examples can be found under `src/main/resources/examples` folder.
 
 ##### Usage
 Request: [POST] `/telemetry`
