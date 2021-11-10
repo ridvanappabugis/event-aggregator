@@ -20,6 +20,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class KafkaConfig {
@@ -66,25 +67,33 @@ public class KafkaConfig {
             final UUID id = UUID.randomUUID();
             final UUID id2 = UUID.randomUUID();
 
-            long seconds = 1;
+            long iteration = 1;
+            double odometer = 0D;
             while(true) {
-                final VehicleTelemetry telemetry = new VehicleTelemetry(id, System.currentTimeMillis(), getSignal(seconds));
+                // Driving time
+                final double seconds = TimeUnit.MILLISECONDS.toSeconds(interval) * iteration;
+                // Max speed km/s
+                final double speed = seconds > 200 ? 200 : seconds;
+                // Delta odometer km/s
+                odometer = odometer + TimeUnit.MILLISECONDS.toSeconds(interval) * speed;
+
+                final VehicleTelemetry telemetry = new VehicleTelemetry(id, System.currentTimeMillis(), getSignal(speed, seconds, odometer));
                 template.send(topic, JSONConverter.toJSON(telemetry));
-                final VehicleTelemetry telemetry2 = new VehicleTelemetry(id2, System.currentTimeMillis(), getSignal(seconds));
+                final VehicleTelemetry telemetry2 = new VehicleTelemetry(id2, System.currentTimeMillis(), getSignal(speed, seconds, odometer));
                 template.send(topic, JSONConverter.toJSON(telemetry2));
 
-                seconds++;
+                iteration++;
                 Thread.sleep(interval);
             }
         };
     }
 
-    private Map<VehicleSignal, Double> getSignal(final long num) {
+    private Map<VehicleSignal, Double> getSignal(final double speed, final double time, final double odometer) {
         final Map<VehicleSignal, Double> signals = new HashMap<>();
-        signals.put(VehicleSignal.CURRENT_SPEED, (double) num);
-        signals.put(VehicleSignal.DRIVING_TIME, (double) num);
+        signals.put(VehicleSignal.CURRENT_SPEED, speed);
+        signals.put(VehicleSignal.DRIVING_TIME, time);
         signals.put(VehicleSignal.IS_CHARGING, 0d);
-        signals.put(VehicleSignal.ODOMETER, (double) num);
+        signals.put(VehicleSignal.ODOMETER, odometer);
 
         return signals;
     }
